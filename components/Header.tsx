@@ -1,7 +1,7 @@
 import React from "react";
 import { useAddress, useDisconnect, useMetamask } from "@thirdweb-dev/react";
 import Link from "next/link";
-import { ChevronDownIcon, BellIcon, ShoppingCartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, BellIcon, ShoppingCartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 
 type Props = {};
