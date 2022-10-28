@@ -42,6 +42,8 @@ const Create = (props: Props) => {
   // - price of the NFT
   // This function gets called when the form is submitted
   const handleCreateListing = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (networkMismatch) {
       switchNetwork && switchNetwork(network);
       return;
