@@ -2,7 +2,6 @@ import Header from "../components/Header";
 import { useActiveListings, useContract, MediaRenderer } from "@thirdweb-dev/react";
 import { ListingType } from "@thirdweb-dev/sdk";
 import { BanknotesIcon, ClockIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { useRouter } from "next/router";
 
 const Home = () => {

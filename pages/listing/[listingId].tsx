@@ -19,6 +19,7 @@ import React, { useEffect, useState } from "react";
 import Countdown from "react-countdown";
 import Header from "../../components/Header";
 import network from "../../utils/network";
+import toast, { Toaster } from "react-hot-toast";
 
 const ListingPage = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const ListingPage = () => {
   const { contract } = useContract(process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT, "marketplace");
 
   //   Mutate hooks
-  const { mutate: buyNow } = useBuyNow(contract);
+  const { mutate: buyNow, isLoading: isBuyNowLoading } = useBuyNow(contract);
   const { mutate: makeOffer } = useMakeOffer(contract);
   const { mutate: makeBid } = useMakeBid(contract);
   const { mutate: acceptOffer } = useAcceptDirectListingOffer(contract);
@@ -66,8 +67,6 @@ const ListingPage = () => {
     });
   };
 
-  console.log(minimumNextBid);
-
   const formatPlaceholder = () => {
     if (!listing) return;
     if (listing?.type === ListingType.Direct) {
@@ -89,6 +88,8 @@ const ListingPage = () => {
 
     if (!listingId || !contract || !listing) return;
 
+    const toastId = toast.loading("Buying NFT");
+
     await buyNow(
       {
         id: listingId,
@@ -97,13 +98,13 @@ const ListingPage = () => {
       },
       {
         onSuccess(data, variables, context) {
-          alert("NFT bought successfully!");
-          console.log("SUCCESS", data, variables, context);
+          toast.remove(toastId);
+          toast.success("NFT bought successfully!");
           router.replace("/");
         },
         onError(error, variables, context) {
-          alert("NFT could not be bought");
-          console.log("ERROR", error, variables, context);
+          toast.remove(toastId);
+          toast.error("NFT could not be bought");
         },
       }
     );
@@ -115,16 +116,16 @@ const ListingPage = () => {
         switchNetwork && switchNetwork(network);
         return;
       }
+
       // Direct listing
       if (listing?.type === ListingType.Direct) {
         if (listing.buyoutPrice.toString() === ethers.utils.parseEther(bidAmount).toString()) {
-          console.log("Buyout Price met, buying NFT.");
-
           buyNft();
           return;
         }
 
-        console.log("Buyout Price was not met, making offer...");
+        const toastId = toast.loading("Making offer...");
+
         await makeOffer(
           {
             quantity: 1,
@@ -133,13 +134,13 @@ const ListingPage = () => {
           },
           {
             onSuccess(data, variables, context) {
-              alert("Offer made successfully!");
-              console.log("SUCCESS", data, variables, context);
+              toast.remove(toastId);
+              toast.success("Offer made successfully!");
               setBidAmount("");
             },
             onError(error, variables, context) {
-              alert("ERROR: Offer count not be made");
-              console.error("ERROR", error, variables, context);
+              toast.remove(toastId);
+              toast.error("Offer could not be made");
             },
           }
         );
@@ -147,7 +148,7 @@ const ListingPage = () => {
 
       // Auction listing
       if (listing?.type === ListingType.Auction) {
-        console.log("Making Bid...");
+        const toastId = toast.loading("Making bid...");
 
         await makeBid(
           {
@@ -156,13 +157,13 @@ const ListingPage = () => {
           },
           {
             onSuccess(data, variables, context) {
-              alert("Bid made successfully!");
-              console.log("SUCCESS", data, variables, context);
+              toast.remove(toastId);
+              toast.success("Bid made successfully!");
               setBidAmount("");
             },
             onError(error, variables, context) {
-              alert("ERROR: Bid could not be made");
-              console.error("ERROR", error, variables, context);
+              toast.remove(toastId);
+              toast.error("Bid could not be made");
             },
           }
         );
@@ -189,6 +190,8 @@ const ListingPage = () => {
   return (
     <div>
       <Header />
+
+      <Toaster position="top-center" />
 
       <main className="max-w-6xl mx-auto p-2 flex flex-col lg:flex-row space-y-10 space-x-5 pr-10">
         <div className="p-10 border mx-auto lg:mx-0 max-w-md lg:max-w-xl">
@@ -223,7 +226,6 @@ const ListingPage = () => {
             </button>
           </div>
 
-          {/* TODO: If Direct, show offer here... */}
           {listing.type === ListingType.Direct && offers && (
             <div className="grid grid-cols-2 gap-y-2">
               <p className="font-bold">Offers:</p>
@@ -255,13 +257,11 @@ const ListingPage = () => {
                             },
                             {
                               onSuccess(data, variables, context) {
-                                alert("Offer accepted successfully!");
-                                console.log("SUCCESS", data, variables, context);
+                                toast.success("Offer accepted successfully!");
                                 router.replace("/");
                               },
                               onError(error, variables, context) {
-                                alert("ERROR: Offer could not be accepted");
-                                console.error("ERROR", error, variables, context);
+                                toast.error("Offer could not be accepted");
                               },
                             }
                           );
@@ -283,7 +283,6 @@ const ListingPage = () => {
               {listing.type === ListingType.Direct ? "Make an Offer" : "Bid on this Auction"}
             </p>
 
-            {/* TODO: Remaiing time on auction goes here... */}
             {listing.type === ListingType.Auction && (
               <>
                 <p>Current Minimum Bid:</p>
